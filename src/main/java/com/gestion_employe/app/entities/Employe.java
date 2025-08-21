@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -24,4 +26,15 @@ public class Employe {
     @ManyToOne
     private Departement departement;
 
+    @OneToMany(mappedBy = "employe", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Mission> missions;
+
+    public Employe(Long id, String nom, String prenom, String noMatricule, String tel, Departement departement) {
+        this.id = id;
+        this.nom = nom;
+        this.prenom = prenom;
+        this.noMatricule = noMatricule;
+        this.tel = tel;
+        this.departement = departement;
+    }
 }
