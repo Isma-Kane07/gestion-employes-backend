@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,5 +18,7 @@ public class EmployeDTO {
     private String noMatricule;
     private String tel;
     private Long departementId;
+    private Long employeChefId;
 
+    private List<String> roles;
 }

@@ -1,6 +1,5 @@
 package com.gestion_employe.app.services;
 
-import com.gestion_employe.app.dtos.DepartementDTO;
 import com.gestion_employe.app.dtos.MissionDTO;
 import com.gestion_employe.app.entities.Employe;
 import com.gestion_employe.app.entities.Mission;
@@ -11,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,10 +30,9 @@ public class MissionService {
         mission.setDescription(dto.getDescription());
         mission.setDateDebut(dto.getDateDebut());
         mission.setDateFin(dto.getDateFin());
-
         if (dto.getEmployeId() != null) {
             Employe employe = employeRepository.findById(dto.getEmployeId())
-                    .orElseThrow(() -> new RuntimeException("Employé non trouvé !"));
+                    .orElseThrow(() -> new RuntimeException("Employé non trouvé!"));
             mission.setEmploye(employe);
         }
         return mission;
@@ -51,10 +50,7 @@ public class MissionService {
     }
 
     public List<MissionDTO> getAllMissions() {
-        return missionRepository.findAll()
-                .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+        return missionRepository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     public MissionDTO createMission(MissionDTO dto) {
@@ -77,19 +73,33 @@ public class MissionService {
                 .collect(Collectors.toList());
     }
 
+    // Nouvelle méthode pour un chef d'employé
+    public List<MissionDTO> getMissionsForChef(Long chefId) {
+        List<Employe> subordonnes = employeRepository.findByEmployeChef_Id(chefId);
+        List<Mission> missions = new ArrayList<>();
+
+        // Récupérer les missions du chef lui-même
+        missions.addAll(missionRepository.findByEmployeId(chefId));
+
+        // Récupérer les missions de chaque subordonné
+        for (Employe subordonne : subordonnes) {
+            missions.addAll(missionRepository.findByEmployeId(subordonne.getId()));
+        }
+
+        return missions.stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
     public MissionDTO updateMission(Long id, MissionDTO dto) {
         return missionRepository.findById(id).map(existingMission -> {
             existingMission.setLieu(dto.getLieu());
             existingMission.setDescription(dto.getDescription());
             existingMission.setDateDebut(dto.getDateDebut());
             existingMission.setDateFin(dto.getDateFin());
-
             if (dto.getEmployeId() != null) {
                 Employe newEmploye = employeRepository.findById(dto.getEmployeId())
                         .orElseThrow(() -> new RuntimeException("Nouvel employé non trouvé !"));
                 existingMission.setEmploye(newEmploye);
             }
-
             Mission updated = missionRepository.save(existingMission);
             return toDTO(updated);
         }).orElse(null);
