@@ -1,6 +1,8 @@
 package com.gestion_employe.app.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gestion_employe.app.dtos.EmployeDTO;
+import com.gestion_employe.app.exceptions.AppNotFoundException;
 import com.gestion_employe.app.services.EmployeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/employes")
 public class EmployeController {
@@ -21,14 +24,15 @@ public class EmployeController {
     private EmployeService employeService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ADMIN')") // Modifié ici
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<EmployeDTO>> getAllEmployes() {
         List<EmployeDTO> employes = employeService.getAllEmployes();
         return ResponseEntity.ok(employes);
     }
 
-    @GetMapping("/page")
-    @PreAuthorize("hasAuthority('ADMIN')") // Modifié ici
+    // Changez le chemin d'accès de "/page" à "/paginated"
+    @GetMapping("/paginated")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Page<EmployeDTO>> getAllEmployes(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -39,7 +43,7 @@ public class EmployeController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYE_CHEF', 'EMPLOYE')") // Modifié ici
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYE_CHEF', 'EMPLOYE')")
     public ResponseEntity<EmployeDTO> getEmployeById(@PathVariable Long id) {
         EmployeDTO employe = employeService.getEmployeById(id);
         if (employe == null) {
@@ -49,14 +53,14 @@ public class EmployeController {
     }
 
     @PostMapping("/create")
-    @PreAuthorize("hasAuthority('ADMIN')") // Modifié ici
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<EmployeDTO> createEmploye(@RequestBody EmployeDTO dto) {
         EmployeDTO created = employeService.createEmploye(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/update/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')") // Modifié ici
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<EmployeDTO> updateEmploye(@PathVariable Long id, @RequestBody EmployeDTO dto) {
         EmployeDTO updated = employeService.updateEmploye(id, dto);
         if (updated == null) {
@@ -66,11 +70,15 @@ public class EmployeController {
     }
 
     @DeleteMapping("/delete/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')") // Modifié ici
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Void> deleteEmploye(@PathVariable Long id) {
         if (!employeService.deleteEmploye(id)) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.noContent().build();
+    }
+    @GetMapping("/find-managers")
+    public List<EmployeDTO> managers(@RequestParam Long departmentId) throws AppNotFoundException, JsonProcessingException {
+        return employeService.findManagers(departmentId);
     }
 }

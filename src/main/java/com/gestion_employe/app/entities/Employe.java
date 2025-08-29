@@ -3,6 +3,7 @@ package com.gestion_employe.app.entities;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Employe {
 
     @Id
@@ -21,6 +23,7 @@ public class Employe {
     @Column(unique = true)
     private String noMatricule;
     private String tel;
+    private String grade;
 
     @ManyToOne
     private Departement departement;
@@ -34,19 +37,7 @@ public class Employe {
 
     @OneToMany(mappedBy = "employeChef", cascade = CascadeType.ALL)
     private List<Employe> subordonnes;
-
-    // Suppression du champ 'roles' car il appartient à l'entité User.
-    // @ManyToMany(fetch = FetchType.EAGER)
-    // @JoinTable( ... )
-    // private List<Role> roles;
-
-    public Employe (Long id, String nom, String prenom, String noMatricule,
-                    String tel, Departement departement) {
-        this.id  = id;
-        this.nom = nom;
-        this.prenom = prenom;
-        this.noMatricule = noMatricule;
-        this.tel = tel;
-        this.departement = departement;
-    }
+    // Note: Le constructeur @AllArgsConstructor généré par Lombok prendra tous les champs,
+    // y compris les listes et relations. Le constructeur personnalisé est plus spécifique.
+    // Vous pouvez aussi ajouter un constructeur qui inclut employeChef si vous en avez besoin.
 }
